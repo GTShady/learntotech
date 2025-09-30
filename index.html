@@ -5,110 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Learn to Tech</title>
   <style>
-    /* Reset */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: system-ui, sans-serif;
-      line-height: 1.6;
-      background: #f3f4f6;
-      color: #1f2937;
-    }
-
-    header {
-      background: #2563eb;
-      color: white;
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-radius: 0 0 1.5rem 1.5rem;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-
-    header h1 {
-      font-size: 1.5rem;
-      font-weight: 700;
-    }
-
-    nav a {
-      color: white;
-      text-decoration: none;
-      margin-left: 1rem;
-      font-weight: 500;
-      padding: 0.4rem 0.8rem;
-      border-radius: 999px;
-      transition: background 0.2s;
-    }
-
-    nav a:hover {
-      background: rgba(255,255,255,0.2);
-    }
-
-    main {
-      max-width: 900px;
-      margin: 2rem auto;
-      padding: 0 1rem;
-    }
-
-    section {
-      margin-bottom: 2rem;
-      padding: 2rem;
-      background: white;
-      border-radius: 1.25rem;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.06);
-    }
-
-    h2 {
-      margin-bottom: 1rem;
-      color: #2563eb;
-      font-size: 1.4rem;
-    }
-
-    p {
-      font-size: 1rem;
-      color: #374151;
-    }
-
-    a.button {
-      display: inline-block;
-      margin-top: 1rem;
-      padding: 0.7rem 1.5rem;
-      background: #2563eb;
-      color: white;
-      text-decoration: none;
-      font-weight: 600;
-      border-radius: 999px;
-      box-shadow: 0 2px 6px rgba(37,99,235,0.3);
-      transition: background 0.2s, transform 0.1s;
-    }
-
-    a.button:hover {
-      background: #1d4ed8;
-      transform: translateY(-2px);
-    }
-
-    footer {
-      text-align: center;
-      padding: 1.5rem;
-      margin-top: 2rem;
-      color: #6b7280;
-      font-size: 0.9rem;
-      border-top: 2px solid #e5e7eb;
-      border-radius: 1rem 1rem 0 0;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; line-height: 1.6; background: #f3f4f6; color: #1f2937; }
+    header { background: #2563eb; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-radius: 0 0 1.5rem 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    header h1 { font-size: 1.5rem; font-weight: 700; }
+    nav a { color: white; text-decoration: none; margin-left: 1rem; font-weight: 500; padding: 0.4rem 0.8rem; border-radius: 999px; transition: background 0.2s; }
+    nav a:hover { background: rgba(255,255,255,0.2); }
+    main { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+    section { margin-bottom: 2rem; padding: 2rem; background: white; border-radius: 1.25rem; box-shadow: 0 4px 10px rgba(0,0,0,0.06); }
+    h2 { margin-bottom: 1rem; color: #2563eb; font-size: 1.4rem; }
+    p { font-size: 1rem; color: #374151; }
+    a.button { display: inline-block; margin-top: 1rem; padding: 0.7rem 1.5rem; background: #2563eb; color: white; text-decoration: none; font-weight: 600; border-radius: 999px; box-shadow: 0 2px 6px rgba(37,99,235,0.3); transition: background 0.2s, transform 0.1s; }
+    a.button:hover { background: #1d4ed8; transform: translateY(-2px); }
+    footer { text-align: center; padding: 1.5rem; margin-top: 2rem; color: #6b7280; font-size: 0.9rem; border-top: 2px solid #e5e7eb; border-radius: 1rem 1rem 0 0; }
+    .course { margin-bottom: 1.5rem; }
+    .course h3 { margin-bottom: 0.5rem; color: #111827; }
   </style>
+  <!-- Markdown parser -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
   <header>
     <h1>Learn to Tech</h1>
     <nav>
       <a href="#about">About</a>
-      <a href="#courses">Courses</a>
+      <a href="#courses" id="courses-link">Courses</a>
       <a href="#contact">Contact</a>
     </nav>
   </header>
@@ -117,12 +38,14 @@
     <section id="about">
       <h2>About</h2>
       <p>Welcome to Learn to Tech — a place to grow your skills in coding, design, and all things technology.</p>
-      <a href="#courses" class="button">Get Started</a>
+      <a href="#courses" class="button" id="start-btn">Get Started</a>
     </section>
 
     <section id="courses">
       <h2>Courses</h2>
-      <p>We’re building step-by-step guides and tutorials to help you learn at your own pace. Stay tuned!</p>
+      <div id="course-list">
+        <p>Click "Courses" above to load content.</p>
+      </div>
     </section>
 
     <section id="contact">
@@ -131,5 +54,51 @@
     </section>
   </main>
 
+  <script>
+    async function loadCourse(name) {
+      try {
+        const res = await fetch(`./courses/${name}.json`);
+        if (!res.ok) throw new Error(`Failed to load ${name}`);
+        const course = await res.json();
+
+        const div = document.createElement('div');
+        div.className = 'course';
+        div.innerHTML = `
+          <h3>${course.title}</h3>
+          <p>${course.description}</p>
+          <div class="course-content">${marked.parse(course.content || "")}</div>
+        `;
+        return div;
+      } catch (err) {
+        console.error(err);
+        const div = document.createElement('div');
+        div.textContent = `Error loading ${name}`;
+        return div;
+      }
+    }
+
+    async function loadCourses() {
+      const container = document.getElementById('course-list');
+      container.innerHTML = "<p>Loading courses...</p>";
+
+      try {
+        const res = await fetch('./courses/index.json');
+        if (!res.ok) throw new Error("Failed to load index.json");
+        const courseNames = await res.json();
+
+        container.innerHTML = "";
+        for (const name of courseNames) {
+          const courseEl = await loadCourse(name);
+          container.appendChild(courseEl);
+        }
+      } catch (err) {
+        container.innerHTML = `<p style="color:red;">${err.message}</p>`;
+      }
+    }
+
+    // Load on clicking "Courses" or "Get Started"
+    document.getElementById('courses-link').addEventListener('click', loadCourses);
+    document.getElementById('start-btn').addEventListener('click', loadCourses);
+  </script>
 </body>
 </html>
